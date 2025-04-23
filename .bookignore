@@ -1,1 +1,5 @@
 .github
+.gitignore
+.bookignore
+package-lock.json
+package.json
