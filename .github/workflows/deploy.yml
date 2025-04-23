@@ -51,9 +51,9 @@ jobs:
           
           # 目标仓库配置
           destination-github-username: "rixingyike"
-          destination-repository-name: "yishulun.com"
+          destination-repository-name: "rixingyike.github.io"
           target-branch: "main"
           user-email: "9830131@qq.com"
           
-          # 动态目标路径：src/.vuepress/public/ebook/当前仓库名
-          destination-directory: "src/.vuepress/public/ebook/${{ steps.get-repo-name.outputs.repo_name }}"
+          # 动态目标路径：ebook/当前仓库名
+          destination-directory: "ebook/${{ steps.get-repo-name.outputs.repo_name }}"
