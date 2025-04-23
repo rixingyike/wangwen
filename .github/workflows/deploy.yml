@@ -43,16 +43,18 @@ jobs:
       # 步骤5: 跨仓库推送构建产物
       - name: Ensure ebook directory exists
         run: |
-          # 克隆目标仓库
-          git clone "https://${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}@github.com/rixingyike/rixingyike.github.io.git" target-repo
+          # 只克隆最新提交，不包含工作历史
+          git clone --depth 1 "https://${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}@github.com/rixingyike/rixingyike.github.io.git" target-repo
           cd target-repo
-
-          # 创建目录并提交（如果不存在）
+          
+          # 只创建需要的目录
           mkdir -p "ebook/${{ steps.get-repo-name.outputs.repo_name }}"
-          if [ -n "$(git status --porcelain)" ]; then
+          
+          # 检查只有目标目录有变化才提交
+          if [ -n "$(git status --porcelain -- ebook/)" ]; then
             git config user.email "9830131@qq.com"
             git config user.name "Automated Directory Creator"
-            git add .
+            git add ebook/
             git commit -m "Create ebook/${{ steps.get-repo-name.outputs.repo_name }} directory"
             git push origin main
           fi
