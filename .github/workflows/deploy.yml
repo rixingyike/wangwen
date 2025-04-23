@@ -1,75 +1,63 @@
-name: Deploy HonKit to yishulun.com
+name: Deploy HonKit to yishulun_blog
 
 on:
   push:
     branches:
-      - main  # 触发分支，按需修改
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # 添加缓存配置以减少构建时间
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
-      # 步骤1: 检出当前仓库代码
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 步骤2: 设置 Node.js 环境
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           cache: 'npm'
 
-      # 步骤3: 安装依赖并构建
       - name: Install and build
         run: |
           npm install
           npx honkit build
 
-      # 步骤4: 获取当前仓库名 (动态生成目标路径)
       - name: Get repository name
         id: get-repo-name
         run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          REPO_NAME=$(basename "${{ github.repository }}")
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
 
-      # 步骤5: 跨仓库推送构建产物
-      - name: Ensure ebook directory exists
+      - name: Clone target repository
         run: |
-          # 只克隆最新提交，不包含工作历史
-          git clone --depth 1 "https://${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}@github.com/rixingyike/rixingyike.github.io.git" target-repo
-          cd target-repo
-          
-          # 只创建需要的目录
-          mkdir -p "ebook/${{ steps.get-repo-name.outputs.repo_name }}"
-          
-          # 检查只有目标目录有变化才提交
-          if [ -n "$(git status --porcelain -- ebook/)" ]; then
-            git config user.email "9830131@qq.com"
-            git config user.name "Automated Directory Creator"
-            git add ebook/
-            git commit -m "Create ebook/${{ steps.get-repo-name.outputs.repo_name }} directory"
-            git push origin main
-          fi
+          git clone "https://${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}@github.com/rixingyike/yishulun_blog_mdandcode.git" target-repo
         env:
           GITHUB_TOKEN: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
 
-      - name: Push to yishulun.com
-        uses: cpina/github-action-push-to-another-repository@v1.7.2
+      - name: Ensure ebook directory exists
+        run: |
+          mkdir -p target-repo/src/.vuepress/public/ebook
+
+      - name: Sync built content
+        run: |
+          # 删除旧内容并复制新内容
+          rm -rf "target-repo/src/.vuepress/public/ebook/${{ steps.get-repo-name.outputs.repo_name }}"
+          cp -R _book "target-repo/src/.vuepress/public/ebook/${{ steps.get-repo-name.outputs.repo_name }}"
+
+      - name: Commit and push changes
+        run: |
+          cd target-repo
+          git config user.email "9830131@qq.com"
+          git config user.name "GitHub Action"
+          git add .
+          git commit -m "chore: Update ${{ steps.get-repo-name.outputs.repo_name }} ebook content"
+          git push origin main
         env:
-          API_TOKEN_GITHUB: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
-        with:
-          source-directory: "_book"
-          destination-github-username: "rixingyike"
-          destination-repository-name: "rixingyike.github.io"
-          target-branch: "main"
-          user-email: "9830131@qq.com"
-          destination-directory: "ebook/${{ steps.get-repo-name.outputs.repo_name }}"
-          commit-message: "Update ebook content (automated)"
+          GITHUB_TOKEN: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
