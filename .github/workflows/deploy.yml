@@ -51,7 +51,7 @@ jobs:
           
           # 目标仓库配置
           destination-github-username: "rixingyike"
-          destination-repository-name: "rixingyike.github.io"
+          destination-repository-name: "yishulun.com"
           target-branch: "main"
           user-email: "9830131@qq.com"
           
