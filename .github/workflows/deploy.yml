@@ -41,19 +41,33 @@ jobs:
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
 
       # 步骤5: 跨仓库推送构建产物
+      - name: Ensure ebook directory exists
+        run: |
+          # 克隆目标仓库
+          git clone "https://${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}@github.com/rixingyike/rixingyike.github.io.git" target-repo
+          cd target-repo
+
+          # 创建目录并提交（如果不存在）
+          mkdir -p "ebook/${{ steps.get-repo-name.outputs.repo_name }}"
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.email "9830131@qq.com"
+            git config user.name "Automated Directory Creator"
+            git add .
+            git commit -m "Create ebook/${{ steps.get-repo-name.outputs.repo_name }} directory"
+            git push origin main
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
+
       - name: Push to yishulun.com
         uses: cpina/github-action-push-to-another-repository@v1.7.2
         env:
           API_TOKEN_GITHUB: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
         with:
-          # 源目录：HonKit 生成的静态文件
-          source-directory: "_book"  
-          
-          # 目标仓库配置
+          source-directory: "_book"
           destination-github-username: "rixingyike"
-          destination-repository-name: "yishulun.com"
+          destination-repository-name: "rixingyike.github.io"
           target-branch: "main"
           user-email: "9830131@qq.com"
-          
-          # 动态目标路径：ebook/当前仓库名
           destination-directory: "ebook/${{ steps.get-repo-name.outputs.repo_name }}"
+          commit-message: "Update ebook content (automated)"
