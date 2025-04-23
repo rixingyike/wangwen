@@ -1,0 +1,59 @@
+name: Deploy HonKit to yishulun.com
+
+on:
+  push:
+    branches:
+      - main  # 触发分支，按需修改
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 添加缓存配置以减少构建时间
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      # 步骤1: 检出当前仓库代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 步骤2: 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      # 步骤3: 安装依赖并构建
+      - name: Install and build
+        run: |
+          npm install
+          npx honkit build
+
+      # 步骤4: 获取当前仓库名 (动态生成目标路径)
+      - name: Get repository name
+        id: get-repo-name
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+
+      # 步骤5: 跨仓库推送构建产物
+      - name: Push to yishulun.com
+        uses: cpina/github-action-push-to-another-repository@v1.7.2
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.EXTERNAL_REPOSITORY_PERSONAL_ACCESS_TOKEN }}
+        with:
+          # 源目录：HonKit 生成的静态文件
+          source-directory: "_book"  
+          
+          # 目标仓库配置
+          destination-github-username: "rixingyike"
+          destination-repository-name: "yishulun.com"
+          target-branch: "main"
+          user-email: "9830131@qq.com"
+          
+          # 动态目标路径：src/.vuepress/public/ebook/当前仓库名
+          destination-directory: "src/.vuepress/public/ebook/${{ steps.get-repo-name.outputs.repo_name }}"
