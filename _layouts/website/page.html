@@ -1,5 +1,19 @@
 {% extends template.self %}
 
+{% block head %}
+    {{ super() }}
+    <!-- Google Analytics -->
+    <script defer crossorigin="anonymous" src="//www.googletagmanager.com/gtag/js?id=G-8N64Q25EK9"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-8N64Q25EK9');
+    </script>
+    <!-- Google Ads -->
+    <script defer crossorigin="anonymous" src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2139303336591479"></script>
+{% endblock %}
+
 {% block body %}
 <div class="blog-banner" style="padding: 10px; background: #f5f5f5; text-align: center;">
   <a href="https://yishulun.com">🏠 返回「艺述论」博客</a>
