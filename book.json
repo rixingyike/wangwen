@@ -1,19 +1,29 @@
 {
-    "root": "./",
-    "title": "如何写网文",
-    "description": "",
-    "author": "李艺",
-    "publisher": "yishulun.com",
-    "structure": {
-        "readme": "README.md",
-        "summary": "README.md"
-    },
-    "plugins": [],
-    "variables": {
-        "themeDefault": {
-            "layout": {
-                "website": "./_layouts/website"
-            }
-        }
+  "root": "./",
+  "title": "如何写网文",
+  "description": "",
+  "author": "李艺",
+  "publisher": "yishulun.com",
+  "structure": {
+    "readme": "README.md",
+    "summary": "SUMMARY.md"
+  },
+  "plugins": [
+    "-lunr",
+    "-search",
+    "livereload"
+  ],
+  "pluginsConfig": {
+    "livereload": {
+      "port": 35729,
+      "delay": 0
     }
+  },
+  "variables": {
+    "themeDefault": {
+      "layout": {
+        "website": "./_layouts/website"
+      }
+    }
+  }
 }
